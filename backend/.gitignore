@@ -1,0 +1,2 @@
+node_modules , .env , .venv , __pycache__ , *.pyc , *.pyo , *.pyd , .mypy_cache , .pytest_cache , .vscode , .idea , dist , build , *.log , *.sqlite3 , .DS_Store    
+.env

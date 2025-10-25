@@ -1,52 +1,6 @@
 
 
 
-
-// import { Pinecone } from "@pinecone-database/pinecone";
-// import dotenv from "dotenv";
-// import { records } from "./samaltman_posts.js";
-
-// dotenv.config();
-
-// const pc = new Pinecone({ apiKey: process.env.API_KEY });
-// const indexName = "samagptex";
-
-// // Create dense index (run once)
-// await pc.createIndexForModel({
-//   name: indexName,
-//   cloud: "aws",
-//   region: "us-east-1",
-//   embed: {
-//     model: "llama-text-embed-v2",
-//     fieldMap: { text: "text" },
-//   },
-//   waitUntilReady: true,
-// });
-
-// console.log(`✅ Index '${indexName}' is ready.`);
-
-// const index = pc.index(indexName).namespace("example-namespace");
-
-// // Pinecone dense model max batch size
-// const MAX_BATCH_SIZE = 96;
-
-// // Upsert in batches safely
-// for (let i = 0; i < records.length; i += MAX_BATCH_SIZE) {
-//   const batch = records.slice(i, i + MAX_BATCH_SIZE);
-//   await index.upsertRecords(batch);
-//   console.log(`📦 Inserted batch ${Math.floor(i / MAX_BATCH_SIZE) + 1}`);
-// }
-
-// console.log(`✅ Successfully inserted ${records.length} records.`);
-
-// // Wait a bit to let indexing finish
-// await new Promise((resolve) => setTimeout(resolve, 10000));
-
-// // Show index stats
-// const stats = await index.describeIndexStats();
-// console.log("📊 Index stats:", stats);
-
-
 import { Pinecone } from "@pinecone-database/pinecone";
 import dotenv from "dotenv";
 import { records } from "./samaltman_posts.js";
@@ -54,7 +8,7 @@ import { records } from "./samaltman_posts.js";
 dotenv.config();
 
 const pc = new Pinecone({ apiKey: process.env.API_KEY });
-const indexName = "samagex";
+const indexName = "samagpt";
 
 // Create dense index (run once)
 await pc.createIndexForModel({
