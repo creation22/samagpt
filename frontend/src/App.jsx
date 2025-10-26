@@ -8,13 +8,14 @@ import ChatUI from "./ui/Chat";
 import { MarqueeDemo } from "./ui/Testimonial.jsx";
 import Feedback from "./ui/Feedback.jsx";
 import CustomCursor from "./ui/Cursor.jsx"; // ✅ import
+import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   return (
     <div className="min-h-screen w-full relative overflow-hidden text-white">
       {/* Custom Cursor */}
       <CustomCursor />
-
+      <Analytics />
       {/* Crimson Depth Background */}
       <div
         className="absolute inset-0 z-0"
