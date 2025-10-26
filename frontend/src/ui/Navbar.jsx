@@ -13,7 +13,7 @@ const Navbar = () => {
         <div className="mt-2 sm:mt-4 rounded-xl bg-white/10 backdrop-blur border border-white/10 shadow-sm">
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 text-white">
             {/* Left side logo */}
-            <div className="text-xl sm:text-2xl font-light">altmanGpt</div>
+            <div className="text-xl sm:text-2xl font-light">AltmanGpt</div>
 
             {/* Right side navigation (desktop) */}
             <div className="hidden md:flex items-center gap-4">

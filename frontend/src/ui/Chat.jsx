@@ -102,7 +102,7 @@ const ChatHeader = ({ loading }) => (
         letterSpacing: '-0.03em',
       }}
     >
-      altmangpt
+      AltmanGpt
     </div>
     <div
       style={{

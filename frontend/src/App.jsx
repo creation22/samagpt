@@ -34,11 +34,12 @@ function App() {
                 <Hero />
                 <WorkingSection />
                 <Feedback />
-                <Footer />
+                
                 
                 <div className="mt-10">
                   <Imaging />
                 </div>
+                <Footer />
               </>
             }
           />

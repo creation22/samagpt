@@ -6,7 +6,7 @@ const Footer = () => {
             <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-10">
                 <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 justify-between">
                     <div className="text-center lg:text-left">
-                        <div className="text-lg sm:text-xl font-semibold">altmanGpt</div>
+                        <div className="text-lg sm:text-xl font-semibold">AltmanGpt</div>
                         <div className="text-white/60 text-xs sm:text-sm">Built by Srajan Gupta • All rights reserved</div>
                     </div>
 
