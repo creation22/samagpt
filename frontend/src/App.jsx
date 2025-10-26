@@ -5,10 +5,16 @@ import Footer from "./ui/Footer";
 import WorkingSection from "./ui/Working";
 import Imaging from "./ui/Imaging";
 import ChatUI from "./ui/Chat";
+import { MarqueeDemo } from "./ui/Testimonial.jsx";
+import Feedback from "./ui/Feedback.jsx";
+import CustomCursor from "./ui/Cursor.jsx"; // ✅ import
 
 function App() {
   return (
     <div className="min-h-screen w-full relative overflow-hidden text-white">
+      {/* Custom Cursor */}
+      <CustomCursor />
+
       {/* Crimson Depth Background */}
       <div
         className="absolute inset-0 z-0"
@@ -19,25 +25,26 @@ function App() {
 
       {/* Main Content Layer */}
       <div className="relative z-10">
-        
         <Routes>
           <Route
             path="/"
             element={
               <>
-              <Navbar />
+                <Navbar />
                 <Hero />
                 <WorkingSection />
+                <Feedback />
+                <Footer />
+                
                 <div className="mt-10">
                   <Imaging />
                 </div>
-                
               </>
             }
           />
           <Route path="/chat" element={<ChatUI />} />
         </Routes>
-        <Footer />
+        
       </div>
     </div>
   );

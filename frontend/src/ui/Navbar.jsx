@@ -13,7 +13,7 @@ const Navbar = () => {
         <div className="mt-2 sm:mt-4 rounded-xl bg-white/10 backdrop-blur border border-white/10 shadow-sm">
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 text-white">
             {/* Left side logo */}
-            <div className="text-xl sm:text-2xl font-bold">altmanGpt</div>
+            <div className="text-xl sm:text-2xl font-light">altmanGpt</div>
 
             {/* Right side navigation (desktop) */}
             <div className="hidden md:flex items-center gap-4">
@@ -24,7 +24,7 @@ const Navbar = () => {
                 Chat
               </button>
               <a
-                href="https://twitter.com/sama"
+                href="https://twitter.com/_creation22"
                 target="_blank"
                 rel="noreferrer"
                 className="px-4 py-1.5 rounded-md border border-white/20 hover:border-white/40 text-white/90 hover:text-white transition-colors text-sm"
