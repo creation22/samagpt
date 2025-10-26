@@ -257,7 +257,7 @@ const ChatUI = () => {
   const sendMessage = async (messageText) => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/ask', {
+      const res = await fetch('https://samagpt.onrender.com/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: messageText, sessionId }),
