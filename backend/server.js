@@ -8,7 +8,15 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+const allowedOrigins = [ "http://localhost:5173", "https://altmangpt.vercel.app" ];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // In-memory store for chat history
