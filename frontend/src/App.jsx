@@ -15,7 +15,7 @@ function App() {
     <div className="min-h-screen w-full relative overflow-hidden text-white">
       {/* Custom Cursor */}
       <CustomCursor />
-      <Analytics />
+  
       {/* Crimson Depth Background */}
       <div
         className="absolute inset-0 z-0"
@@ -46,7 +46,7 @@ function App() {
           />
           <Route path="/chat" element={<ChatUI />} />
         </Routes>
-        
+        <Analytics />
       </div>
     </div>
   );
