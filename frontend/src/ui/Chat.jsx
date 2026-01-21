@@ -1,145 +1,247 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-// MessageBubble Component
-const MessageBubble = React.memo(({ text, isUser, timestamp }) => {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: isUser ? 'row-reverse' : 'row',
-        alignItems: 'flex-start',
-        gap: '0.5rem',
-        maxWidth: '85%',
-        marginBottom: '0.75rem',
-      }}
-      className="message-bubble"
-    >
-      <div
-        style={{
-          width: '36px',
-          height: '36px',
-          borderRadius: '50%',
-          background: isUser
-            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          color: '#fff',
-          flexShrink: 0,
-        }}
-        className="avatar"
-      >
-        {isUser ? 'me' : 'sama'}
-      </div>
+// ==========================================
+// 1. CONFIGURATION & STYLES
+// ==========================================
 
-      <div
-        style={{
-          background: isUser
-            ? 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%)'
-            : 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)',
-          padding: '0.875rem 1.125rem',
-          borderRadius: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          backdropFilter: 'blur(12px)',
-          animation: 'fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-        }}
-      >
-        <div
-          style={{
-            color: '#fff',
-            fontSize: '0.9rem',
-            fontWeight: '300',
-            lineHeight: '1.6',
-            letterSpacing: '-0.01em',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {text}
-        </div>
-        <div
-          style={{
-            fontSize: '0.7rem',
-            color: 'rgba(255, 255, 255, 0.35)',
-            marginTop: '0.5rem',
-            fontWeight: '300',
-            textAlign: 'right',
-          }}
-        >
-          {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </div>
-      </div>
-    </div>
-  );
-});
+const API_URL = 'https://samagpt.onrender.com/ask';
 
-// ChatHeader Component
-const ChatHeader = ({ loading }) => (
-  <div
-    style={{
-      padding: '1rem 1.25rem',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(255,255,255,0.02)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-    }}
-    className="chat-header"
-  >
-    <div
-      style={{
-        width: '10px',
-        height: '10px',
-        borderRadius: '50%',
-        background: loading
-          ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
-          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        animation: loading ? 'pulse 1.5s ease-in-out infinite' : 'none',
-        boxShadow: loading
-          ? '0 0 12px rgba(251, 191, 36, 0.6)'
-          : '0 0 12px rgba(16, 185, 129, 0.6)',
-      }}
-    />
-    <div
-      style={{
-        fontSize: '1.25rem',
-        fontWeight: '300',
-        color: '#ffffff',
-        letterSpacing: '-0.02em',
-      }}
-      className="header-title"
-    >
-      AltmanGpt
-    </div>
-    <div
-      style={{
-        fontSize: '0.75rem',
-        fontWeight: '300',
-        color: 'rgba(255, 255, 255, 0.5)',
-        marginLeft: 'auto',
-      }}
-      className="status-text"
-    >
-      {loading ? 'Thinking...' : 'Online'}
-    </div>
+const GlobalStyles = () => (
+  <style>{`
+    :root {
+      --bg-color: #050505;
+      --surface-1: #141414;
+      --surface-2: #1c1c1c;
+      --border-color: #333333;
+      --text-primary: #ededed;
+      --text-secondary: #888888;
+      --accent-user: #333;
+      --accent-ai: #10b981;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body { 
+      margin: 0; 
+      background: var(--bg-color); 
+      font-family: var(--font-stack);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Utilities */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #444; }
+  `}</style>
+);
+
+// ==========================================
+// 2. CUSTOM HOOKS (LOGIC)
+// ==========================================
+
+/**
+ * Handles auto-scrolling to the bottom of the chat list.
+ */
+const useScrollToBottom = (dependency) => {
+  const bottomRef = useRef(null);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [dependency]);
+
+  return bottomRef;
+};
+
+/**
+ * Handles chat state, session management, and API communication.
+ */
+const useChatLogic = () => {
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      text: "I focus on direct answers based on my writing and thinking. What's on your mind?",
+      isUser: false,
+      timestamp: new Date(),
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
+
+  // Initialize Session ID once
+  const [sessionId] = useState(() => {
+    try {
+      const key = 'altmangpt_session_id';
+      const existing = sessionStorage.getItem(key);
+      if (existing) return existing;
+      const newId = crypto.randomUUID();
+      sessionStorage.setItem(key, newId);
+      return newId;
+    } catch {
+      return crypto.randomUUID();
+    }
+  });
+
+  const sendMessage = useCallback(async (text) => {
+    if (!text.trim()) return;
+
+    // 1. Optimistic UI Update
+    const userMsg = { id: Date.now(), text, isUser: true, timestamp: new Date() };
+    setMessages((prev) => [...prev, userMsg]);
+    setLoading(true);
+
+    try {
+      // 2. API Request
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text, sessionId }),
+      });
+      const data = await res.json();
+
+      // 3. Add AI Response
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          text: data.answer || 'Error: No response.',
+          isUser: false,
+          timestamp: new Date()
+        },
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, text: 'Connection error. Please try again.', isUser: false, timestamp: new Date() },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionId]);
+
+  return { messages, loading, sendMessage };
+};
+
+// ==========================================
+// 3. PRESENTATIONAL COMPONENTS
+// ==========================================
+
+const Avatar = ({ isUser }) => (
+  <div style={{
+    width: '32px', height: '32px', borderRadius: '50%',
+    background: isUser ? 'linear-gradient(135deg, #333, #000)' : 'linear-gradient(135deg, #10b981, #047857)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '0.7rem', fontWeight: '700', color: '#fff',
+    border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0, marginBottom: '4px'
+  }}>
+    {isUser ? 'ME' : 'AI'}
   </div>
 );
 
-// ChatInput Component
-const ChatInput = ({ inputValue, setInputValue, handleSend, loading }) => {
+const MessageBubble = React.memo(({ text, isUser, timestamp }) => (
+  <div style={{
+    display: 'flex', flexDirection: isUser ? 'row-reverse' : 'row',
+    alignItems: 'flex-end', gap: '12px', marginBottom: '1.5rem',
+    maxWidth: '100%', animation: 'fadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+  }}>
+    <Avatar isUser={isUser} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isUser ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
+      <div style={{
+        background: isUser ? '#1c1c1c' : 'transparent',
+        color: 'var(--text-primary)',
+        padding: isUser ? '12px 18px' : '0 12px 8px 0',
+        borderRadius: isUser ? '20px 20px 4px 20px' : '0',
+        border: isUser ? '1px solid var(--border-color)' : 'none',
+        fontSize: '0.95rem', lineHeight: '1.6', whiteSpace: 'pre-wrap'
+      }}>
+        {text}
+      </div>
+      <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '4px', margin: isUser ? '4px 4px 0 0' : '4px 0 0 2px' }}>
+        {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      </span>
+    </div>
+  </div>
+));
+
+const Header = ({ loading, messages }) => {
+  const handleCopy = () => {
+    if (!messages || messages.length === 0) return;
+    const text = messages.map(m => `${m.isUser ? 'User' : 'Sam'}: ${m.text}`).join('\n\n');
+    navigator.clipboard.writeText(text);
+    alert('Conversation copied to clipboard');
+  };
+
+  return (
+    <header style={{
+      padding: '1.5rem 0', borderBottom: '1px solid var(--surface-2)',
+      background: 'rgba(5, 5, 5, 0.8)', backdropFilter: 'blur(10px)',
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      position: 'sticky', top: 0, zIndex: 10, paddingLeft: '1.5rem', paddingRight: '1.5rem'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{
+          width: '8px', height: '8px', borderRadius: '50%',
+          backgroundColor: loading ? '#fbbf24' : '#10b981',
+          boxShadow: loading ? '0 0 8px rgba(251, 191, 36, 0.4)' : 'none',
+          animation: loading ? 'pulse 1.5s infinite' : 'none'
+        }} />
+        <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          AltmanGPT
+        </span>
+      </div>
+
+      <button
+        onClick={handleCopy}
+        style={{
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '6px', color: '#888', fontSize: '0.75rem', padding: '6px 10px',
+          cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit'
+        }}
+        className="copy-btn"
+      >
+        Copy Chat
+      </button>
+    </header>
+  );
+};
+
+const ChatInput = ({ onSend, loading }) => {
+  const [value, setValue] = useState('');
   const textareaRef = useRef(null);
 
+  // Auto-resize textarea
   useEffect(() => {
     const ta = textareaRef.current;
-    if (!ta) return;
-    ta.style.height = 'auto';
-    ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`;
-  }, [inputValue]);
+    if (ta) {
+      ta.style.height = 'auto';
+      ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`;
+    }
+  }, [value]);
 
-  const handleKeyPress = (e) => {
+  const handleSend = () => {
+    if (value.trim() && !loading) {
+      onSend(value);
+      setValue('');
+    }
+  };
+
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -147,360 +249,125 @@ const ChatInput = ({ inputValue, setInputValue, handleSend, loading }) => {
   };
 
   return (
-    <div
-      style={{
-        padding: '1rem 1.25rem',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-        background: 'rgba(255, 255, 255, 0.02)',
-      }}
-      className="chat-input-container"
-    >
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
+    <div style={{ padding: '1.5rem', background: 'linear-gradient(to top, #050505 80%, transparent)' }}>
+      <div style={{
+        maxWidth: '800px', margin: '0 auto', background: '#141414',
+        border: '1px solid #333', borderRadius: '16px', display: 'flex',
+        alignItems: 'flex-end', padding: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+      }}>
         <textarea
           ref={textareaRef}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Ask anything in Sam Altman's style..."
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask something meaningful..."
           style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '14px',
-            padding: '0.875rem 1rem',
-            color: '#fff',
-            fontSize: '0.9rem',
-            fontFamily: 'inherit',
-            fontWeight: '300',
-            resize: 'none',
-            outline: 'none',
-            minHeight: '48px',
-            maxHeight: '120px',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            backdropFilter: 'blur(12px)',
+            flex: 1, background: 'transparent', border: 'none', color: '#fff',
+            fontSize: '1rem', padding: '12px 16px', resize: 'none', outline: 'none',
+            minHeight: '48px', maxHeight: '150px', lineHeight: '1.5', fontFamily: 'inherit'
           }}
-          className="message-input"
         />
+
+        {/* Paste Button */}
+        <button
+          onClick={async () => {
+            try {
+              const text = await navigator.clipboard.readText();
+              if (text) setValue((prev) => prev + text);
+            } catch (err) {
+              console.error('Failed to read clipboard', err);
+            }
+          }}
+          style={{
+            background: 'transparent',
+            color: '#666',
+            border: 'none',
+            padding: '8px',
+            cursor: 'pointer',
+            marginRight: '4px',
+            marginBottom: '4px'
+          }}
+          title="Paste from Clipboard"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+          </svg>
+        </button>
+
         <button
           onClick={handleSend}
-          disabled={!inputValue.trim() || loading}
+          disabled={!value.trim() || loading}
           style={{
-            background:
-              inputValue.trim() && !loading
-                ? 'linear-gradient(135deg, #ffffff 0%, #d1d5db 100%)'
-                : 'rgba(255, 255, 255, 0.08)',
-            color: inputValue.trim() && !loading ? '#000' : 'rgba(255,255,255,0.25)',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '0.875rem 1.25rem',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            cursor: inputValue.trim() && !loading ? 'pointer' : 'not-allowed',
-            fontFamily: 'inherit',
-            letterSpacing: '-0.01em',
-            height: '48px',
-            minWidth: '70px',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: inputValue.trim() && !loading
-              ? '0 4px 12px rgba(255, 255, 255, 0.2)'
-              : 'none',
+            background: value.trim() && !loading ? '#fff' : '#222',
+            color: value.trim() && !loading ? '#000' : '#555',
+            border: 'none', borderRadius: '10px', height: '36px', padding: '0 16px',
+            fontSize: '0.85rem', fontWeight: '600', cursor: value.trim() ? 'pointer' : 'default',
+            marginBottom: '6px', marginRight: '6px', transition: 'all 0.2s'
           }}
-          className="send-button"
         >
           {loading ? '...' : 'Send'}
         </button>
       </div>
-      <div
-        style={{
-          fontSize: '0.7rem',
-          color: 'rgba(255, 255, 255, 0.35)',
-          fontWeight: '300',
-          textAlign: 'center',
-          marginTop: '0.75rem',
-        }}
-        className="input-hint"
-      >
-        Press Enter to send • Shift+Enter for new line
+      <div style={{ textAlign: 'center', color: '#444', fontSize: '0.75rem', marginTop: '12px' }}>
+        AI generated content can be inaccurate.
       </div>
     </div>
   );
 };
 
-// Main ChatUI Component
+// ==========================================
+// 4. MAIN CONTAINER
+// ==========================================
+
 const ChatUI = () => {
-  const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Recommended: Focus on meaningful questions. Skip small talk. Get direct answers from Sam Altman's writing and thinking.",
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
-  const [loading, setLoading] = useState(false);
-
-  const messagesEndRef = useRef(null);
-  const firstRender = useRef(true);
-
-  const [sessionId] = useState(() => {
-    const storageKey = 'altmangpt_session_id';
-    try {
-      const existing = sessionStorage.getItem(storageKey);
-      if (existing) return existing;
-      const newId = crypto.randomUUID();
-      sessionStorage.setItem(storageKey, newId);
-      return newId;
-    } catch {
-      return crypto.randomUUID();
-    }
-  });
-
-  const scrollToBottom = (smooth = true) => {
-    const container = messagesEndRef.current;
-    if (!container) return;
-    const parent = container.parentElement;
-    if (!parent) return;
-
-    const isNearBottom = parent.scrollHeight - parent.scrollTop - parent.clientHeight < 150;
-    if (isNearBottom || smooth) {
-      container.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
-    }
-  };
-
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    scrollToBottom();
-  }, [messages]);
-
-  const sendMessage = async (messageText) => {
-    setLoading(true);
-    try {
-      const res = await fetch('https://samagpt.onrender.com/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: messageText, sessionId }),
-      });
-      const data = await res.json();
-      if (data.answer) {
-        setMessages((prev) => [
-          ...prev,
-          { id: prev.length + 1, text: data.answer, isUser: false, timestamp: new Date() },
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { id: prev.length + 1, text: 'Error: No response from AI.', isUser: false, timestamp: new Date() },
-        ]);
-      }
-    } catch (error) {
-      console.error(error);
-      setMessages((prev) => [
-        ...prev,
-        { id: prev.length + 1, text: 'Error connecting to backend.', isUser: false, timestamp: new Date() },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
-
-    const newMessage = { id: messages.length + 1, text: inputValue, isUser: true, timestamp: new Date() };
-    setMessages((prev) => [...prev, newMessage]);
-    const userInput = inputValue;
-    setInputValue('');
-    sendMessage(userInput);
-  };
+  const { messages, loading, sendMessage } = useChatLogic();
+  const bottomRef = useScrollToBottom(messages);
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#000',
-        padding: '0',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        // fontFamily removed to use global defaults
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '900px',
-          height: '100vh',
-          background: 'rgba(0,0,0,0.95)',
-          border: 'none',
-          borderRadius: '0',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          backdropFilter: 'blur(24px)',
-          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.6)',
-        }}
-        className="chat-container"
-      >
-        <ChatHeader loading={loading} />
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '1.25rem',
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0) 100%)',
-            WebkitOverflowScrolling: 'touch',
-          }}
-          className="messages-container"
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} text={msg.text} isUser={msg.isUser} timestamp={msg.timestamp} />
-            ))}
-            {loading && (
-              <div style={{
-                color: 'rgba(255,255,255,0.45)',
-                fontStyle: 'italic',
-                textAlign: 'left',
-                fontSize: '0.85rem',
-                paddingLeft: '0.5rem',
-                animation: 'fadeInUp 0.3s ease-out'
-              }}>
-                Sam Altman is thinking...
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-        <ChatInput inputValue={inputValue} setInputValue={setInputValue} handleSend={handleSend} loading={loading} />
-      </div>
+    <div style={{ display: 'flex', justifyContent: 'center', minHeight: '100vh' }}>
+      <GlobalStyles />
+      <div style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', height: '100vh' }}>
 
-      <style>{`
-        * {
-          -webkit-tap-highlight-color: transparent;
-        }
-        
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.95); }
-        }
-        
-        textarea::placeholder { 
-          color: rgba(255,255,255,0.3); 
-          font-weight: 300; 
-        }
-        
-        .messages-container::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        .messages-container::-webkit-scrollbar-track {
-          background: rgba(255,255,255,0.02);
-        }
-        
-        .messages-container::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
-          border-radius: 3px;
-        }
-        
-        .messages-container::-webkit-scrollbar-thumb:hover {
-          background: rgba(255,255,255,0.15);
-        }
-        
-        /* Tablet and Desktop styles */
-        @media (min-width: 768px) {
-          .chat-container {
-            height: 88vh !important;
-            margin: 2rem 0 !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            border-radius: 24px !important;
-          }
-          
-          .message-bubble {
-            max-width: 75% !important;
-          }
-          
-          .chat-header {
-            padding: 1.5rem 2rem !important;
-          }
-          
-          .chat-input-container {
-            padding: 1.5rem 2rem !important;
-          }
-          
-          .messages-container {
-            padding: 2rem !important;
-          }
-          
-          .header-title {
-            font-size: 1.5rem !important;
-          }
-          
-          .avatar {
-            width: 40px !important;
-            height: 40px !important;
-            font-size: 0.8rem !important;
-          }
-          
-          .message-input {
-            font-size: 0.95rem !important;
-            padding: 1rem 1.25rem !important;
-            min-height: 56px !important;
-          }
-          
-          .send-button {
-            height: 56px !important;
-            min-width: 80px !important;
-            padding: 1rem 1.5rem !important;
-            font-size: 0.95rem !important;
-          }
-          
-          .send-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.25) !important;
-          }
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 767px) {
-          .chat-container {
-            border-radius: 0 !important;
-          }
-          
-          .input-hint {
-            font-size: 0.65rem !important;
-          }
-          
-          .status-text {
-            display: none;
-          }
-        }
-        
-        /* Small mobile devices */
-        @media (max-width: 374px) {
-          .message-bubble {
-            max-width: 90% !important;
-          }
-          
-          .avatar {
-            width: 32px !important;
-            height: 32px !important;
-            font-size: 0.7rem !important;
-          }
-          
-          .header-title {
-            font-size: 1.1rem !important;
-          }
-        }
-      `}</style>
+        <Header loading={loading} messages={messages} />
+
+        <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.5rem' }}>
+          {messages.length === 1 && (
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px', justifyContent: 'center' }}>
+              {["How do I start a startup?", "Should I sell my company?", "What is the future of AI?", "How to hire great people?"].map(q => (
+                <button
+                  key={q}
+                  onClick={() => sendMessage(q)}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '20px', padding: '8px 16px', color: '#ccc', fontSize: '0.8rem',
+                    cursor: 'pointer', transition: 'background 0.2s'
+                  }}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+          {messages.map((msg) => (
+            <MessageBubble
+              key={msg.id}
+              text={msg.text}
+              isUser={msg.isUser}
+              timestamp={msg.timestamp}
+            />
+          ))}
+          {loading && (
+            <div style={{ paddingLeft: '48px', color: '#666', fontSize: '0.9rem', animation: 'pulse 1s infinite' }}>
+              Thinking...
+            </div>
+          )}
+          <div ref={bottomRef} style={{ height: '1px' }} />
+        </div>
+
+        <ChatInput onSend={sendMessage} loading={loading} />
+
+      </div>
     </div>
   );
 };

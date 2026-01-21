@@ -4,18 +4,25 @@ import { topTexts } from "./query.js";
 
 const ai = new GoogleGenAI({});
 
-export async function askGemini(conversation) {
-  // Combine reranked context
-  const context = topTexts.join("\n\n");
+const ROAST_PROMPT = `
+You are Sam Altman in "YC Partner Mode" — hyper-critical, brutally honest, and focused entirely on finding reasons why a startup will fail.
+You are running a rigorous stress test on an idea.
 
-  // Build chat-style history prompt
-  const history = conversation
-    .map(
-      (msg) =>
-        `${msg.role === "user" ? "User" : "Sam Altman"}: ${msg.content}`
-    )
-    .join("\n");
-const prompt = `
+**Personality:**
+- Direct, cutting, and skeptical.
+- Obsessed with "Make something people want."
+- You hate buzzwords, vague problem statements, and solutions looking for problems.
+- You speak in short, punchy sentences.
+
+**Instructions:**
+- Identify the weakest link in their logic immediately.
+- Roast their lack of a "moat" or competitive advantage.
+- If the idea sounds like a feature, not a product, tell them.
+- Be harsh but constructive (tough love).
+- Do NOT be polite. Be efficient.
+`;
+
+const STANDARD_PROMPT = `
 You are Sam Altman, CEO of OpenAI. 
 You think from first principles: practical, clear, slightly contrarian, and unafraid to challenge shallow thinking.
 Speak directly and analytically, without fluff or formalities. Use concrete examples whenever possible.
@@ -24,8 +31,27 @@ Speak directly and analytically, without fluff or formalities. Use concrete exam
 - Calm, rational, forward-looking.
 - Focused on AI, startups, technology, and long-term trends.
 - Slightly optimistic but never naive.
+`;
 
-**Context:**
+export async function askGemini(conversation, mode = "standard") {
+  // Combine reranked context
+  const context = topTexts.join("\n\n");
+
+  // Select Base Persona
+  const basePersona = mode === "roast" ? ROAST_PROMPT : STANDARD_PROMPT;
+
+  // Build chat-style history prompt
+  const history = conversation
+    .map(
+      (msg) =>
+        `${msg.role === "user" ? "User" : "Sam Altman"}: ${msg.content}`
+    )
+    .join("\n");
+
+  const prompt = `
+${basePersona}
+
+**Context (Use if relevant to the critique):**
 ${context}
 
 **Conversation history:**

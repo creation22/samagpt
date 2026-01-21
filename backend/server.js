@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-const allowedOrigins = [ "http://localhost:5173", "https://altmangpt.vercel.app" ];
+const allowedOrigins = ["http://localhost:5173", "https://altmangpt.vercel.app"];
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
@@ -23,7 +23,8 @@ app.use(express.json());
 const userSessions = new Map();
 
 app.post("/ask", async (req, res) => {
-  const { question, sessionId } = req.body;
+  const { question, sessionId, mode } = req.body;
+
   if (!question || !sessionId)
     return res.status(400).json({ error: "question and sessionId required" });
 
@@ -35,7 +36,7 @@ app.post("/ask", async (req, res) => {
 
   try {
     // Get response
-    const answer = await askGemini(conversation);
+    const answer = await askGemini(conversation, mode || "standard");
 
     // Add assistant message to conversation
     conversation.push({ role: "assistant", content: answer });
