@@ -41,10 +41,33 @@ const GlobalStyles = () => (
     }
 
     /* Utilities */
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #444; }
+
+    /* Mode Switch */
+    .mode-switch {
+      position: relative; width: 140px; height: 32px;
+      background: #111; border: 1px solid #333;
+      border-radius: 16px; display: flex; cursor: pointer;
+      padding: 2px;
+    }
+    .mode-switch-slider {
+      position: absolute; width: 50%; height: 26px;
+      background: #333; border-radius: 14px;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .mode-option {
+      flex: 1; z-index: 1; text-align: center; font-size: 0.75rem;
+      line-height: 28px; font-weight: 500; color: #666; transition: color 0.2s;
+    }
+    .mode-option.active { color: #fff; }
+
+    /* Voice Pulse */
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
   `}</style>
 );
 
@@ -83,6 +106,19 @@ const useChatLogic = () => {
     },
   ]);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState('standard'); // 'standard' | 'roast'
+
+  // Reset chat when mode changes
+  useEffect(() => {
+    setMessages([{
+      id: Date.now(),
+      text: mode === 'roast'
+        ? "YC Partner Mode activated. Pitch me your startup idea. I'll tell you why it will fail."
+        : "I focus on direct answers based on my writing and thinking. What's on your mind?",
+      isUser: false,
+      timestamp: new Date(),
+    }]);
+  }, [mode]);
 
   // Initialize Session ID once
   const [sessionId] = useState(() => {
@@ -111,7 +147,7 @@ const useChatLogic = () => {
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, sessionId }),
+        body: JSON.stringify({ question: text, sessionId, mode }),
       });
       const data = await res.json();
 
@@ -133,9 +169,9 @@ const useChatLogic = () => {
     } finally {
       setLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, mode]);
 
-  return { messages, loading, sendMessage };
+  return { messages, loading, sendMessage, mode, setMode };
 };
 
 // ==========================================
@@ -223,6 +259,7 @@ const Header = ({ loading, messages }) => {
 
 const ChatInput = ({ onSend, loading }) => {
   const [value, setValue] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const textareaRef = useRef(null);
 
   // Auto-resize textarea
@@ -233,6 +270,32 @@ const ChatInput = ({ onSend, loading }) => {
       ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`;
     }
   }, [value]);
+
+  const handleVoice = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input not supported in this browser");
+      return;
+    }
+
+    if (isListening) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    setIsListening(true);
+    recognition.start();
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setValue((prev) => prev ? prev + " " + transcript : transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+  };
 
   const handleSend = () => {
     if (value.trim() && !loading) {
@@ -267,6 +330,31 @@ const ChatInput = ({ onSend, loading }) => {
             minHeight: '48px', maxHeight: '150px', lineHeight: '1.5', fontFamily: 'inherit'
           }}
         />
+
+
+
+        {/* Mic Button */}
+        <button
+          onClick={handleVoice}
+          style={{
+            background: isListening ? '#ef4444' : 'rgba(255,255,255,0.05)',
+            color: isListening ? '#fff' : '#888',
+            border: 'none', padding: '10px', cursor: 'pointer',
+            marginRight: '8px', marginBottom: '4px', borderRadius: '50%',
+            transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '36px', height: '36px',
+            animation: isListening ? 'pulse-red 1.5s infinite' : 'none',
+            boxShadow: isListening ? '0 0 10px rgba(239, 68, 68, 0.5)' : 'none'
+          }}
+          title="Voice Input"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </button>
 
         {/* Paste Button */}
         <button
@@ -321,7 +409,7 @@ const ChatInput = ({ onSend, loading }) => {
 // ==========================================
 
 const ChatUI = () => {
-  const { messages, loading, sendMessage } = useChatLogic();
+  const { messages, loading, sendMessage, mode, setMode } = useChatLogic();
   const bottomRef = useScrollToBottom(messages);
 
   return (
@@ -329,12 +417,15 @@ const ChatUI = () => {
       <GlobalStyles />
       <div style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', height: '100vh' }}>
 
-        <Header loading={loading} messages={messages} />
+        <Header loading={loading} messages={messages} mode={mode} setMode={setMode} />
 
         <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.5rem' }}>
           {messages.length === 1 && (
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px', justifyContent: 'center' }}>
-              {["How do I start a startup?", "Should I sell my company?", "What is the future of AI?", "How to hire great people?"].map(q => (
+              {(mode === 'roast'
+                ? ["My AI startup idea...", "Uber for dogs...", "Social network for introverts..."]
+                : ["How do I start a startup?", "Should I sell my company?", "What is the future of AI?", "How to hire great people?"]
+              ).map(q => (
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
