@@ -19,16 +19,13 @@ const reviews = [
     username: "@naval",
     body: "A brilliant way to distill wisdom into actionable insights. I love it.",
     img: "https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcRmEmGIM1hA5JD8_acLpKRSIP_zCDL_Hvw4eDHPRx56z8YbbOpbK1rkitTBW-ieTlsLLsYJLFADrJPnMp0GE5PStcrjNUrdc0O2ePXIUgTvT6-lmzmqXigA-iRp2OPCWk2fN9atofd0SDA",
-  },
- ,
-,
-  {
+  }, {
     name: "Sundar Pichai",
     username: "@sundarpichai",
     body: "Very useful and thoughtfully designed. It’s like conversing with a knowledgeable guide.",
     img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlnCyMl_7P4KMYUNxJJMNSPMLRCN7acXVJ00zOVH5ZkmtmW43X1fI1DZo&s",
   },
-    {
+  {
     name: "Mark Zuckerberg",
     username: "@zuck",
     body: "A fascinating tool. It really demonstrates the potential of AI in understanding complex ideas.",
@@ -78,8 +75,8 @@ export function MarqueeDemo() {
           <ReviewCard key={review.username} {...review} />
         ))}
       </Marquee>
-<div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-black to-transparent"></div>
-<div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-black to-transparent"></div>
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-black to-transparent"></div>
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-black to-transparent"></div>
 
     </div>
   )

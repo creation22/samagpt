@@ -14,9 +14,9 @@ const Imaging = () => {
   ];
 
   return (
-    <div style={{ 
-      height: "100vh", 
-      position: "relative", 
+    <div style={{
+      height: "100vh",
+      position: "relative",
       overflow: "hidden",
       background: "#000000",
     }}>
@@ -28,7 +28,7 @@ const Imaging = () => {
         pointerEvents: "none",
         zIndex: 1
       }} />
-      
+
       {/* Vignette */}
       <div style={{
         position: "absolute",
@@ -64,10 +64,10 @@ const Imaging = () => {
       </div>
 
       {/* Main content */}
-      <div style={{ 
-        position: "absolute", 
-        top: "50%", 
-        left: "50%", 
+      <div style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: 10,
         textAlign: "center",
@@ -79,7 +79,6 @@ const Imaging = () => {
         <div style={{
           fontSize: "clamp(3rem, 8vw, 6rem)",
           fontWeight: "300",
-          fontFamily: "'Inter', sans-serif",
           letterSpacing: "-0.04em",
           lineHeight: "1.05",
           color: "#ffffff",
@@ -99,12 +98,11 @@ const Imaging = () => {
             AGI
           </span>
         </div>
-        
+
         {/* Subtitle with creative layout */}
         <div style={{
           fontSize: "clamp(1.3rem, 3.5vw, 2.2rem)",
           fontWeight: "300",
-          fontFamily: "'Inter', sans-serif",
           letterSpacing: "-0.02em",
           lineHeight: "1.4",
           color: "rgba(255, 255, 255, 0.85)",
@@ -231,5 +229,5 @@ const Imaging = () => {
     </div>
   );
 };
-  
+
 export default Imaging;

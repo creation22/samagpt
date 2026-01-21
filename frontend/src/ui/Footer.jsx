@@ -6,7 +6,7 @@ const Footer = () => {
             <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-10">
                 <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 justify-between">
                     <div className="text-center lg:text-left">
-                        <div className="text-lg sm:text-xl font-semibold">AltmanGpt</div>
+                        <div className="text-lg sm:text-xl font-light">AltmanGpt</div>
                         <div className="text-white/60 text-xs sm:text-sm">Built by Srajan Gupta • All rights reserved</div>
                     </div>
 
@@ -27,7 +27,7 @@ const Footer = () => {
                             rel="noreferrer"
                             className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 sm:px-4 py-2 text-xs sm:text-sm text-white hover:bg-white/20 transition-colors min-h-[44px]"
                         >
-                            <span>☕ Buy me a coffee</span>
+                            <span>☕ Buy Me a Coffee</span>
                         </a>
                     </div>
                 </div>

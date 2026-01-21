@@ -19,7 +19,7 @@ const Navbar = () => {
             <div className="hidden md:flex items-center gap-4">
               <button
                 onClick={() => navigate("/chat")}
-                className="px-4 py-1.5 rounded-md bg-white/20 hover:bg-white/30 text-white transition-colors text-sm"
+                className="px-4 py-1.5 rounded-md bg-white/20 hover:bg-white/30 text-white transition-colors text-sm font-medium"
               >
                 Chat
               </button>
@@ -27,7 +27,7 @@ const Navbar = () => {
                 href="https://twitter.com/_creation22"
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-1.5 rounded-md border border-white/20 hover:border-white/40 text-white/90 hover:text-white transition-colors text-sm"
+                className="px-4 py-1.5 rounded-md border border-white/20 hover:border-white/40 text-white/90 hover:text-white transition-colors text-sm font-medium"
               >
                 Twitter
               </a>
@@ -52,15 +52,15 @@ const Navbar = () => {
                     navigate("/chat");
                     setIsMenuOpen(false);
                   }}
-                  className="block w-full px-3 py-2 rounded-md bg-white/20 hover:bg-white/30 text-white transition-colors text-center text-sm"
+                  className="block w-full px-3 py-2 rounded-md bg-white/20 hover:bg-white/30 text-white transition-colors text-center text-sm font-medium"
                 >
                   Chat
                 </button>
                 <a
-                  href="https://twitter.com/sama"
+                  href="https://twitter.com/_creation22"
                   target="_blank"
                   rel="noreferrer"
-                  className="block w-full px-3 py-2 rounded-md border border-white/20 hover:border-white/40 text-white/90 hover:text-white transition-colors text-center text-sm"
+                  className="block w-full px-3 py-2 rounded-md border border-white/20 hover:border-white/40 text-white/90 hover:text-white transition-colors text-center text-sm font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Twitter

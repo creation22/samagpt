@@ -67,23 +67,23 @@ const Hero = () => {
         </div>
 
         {/* Main Hero Text */}
-        <h1 className="text-5xl md:text-7xl font-light mb-8 gradient-text drop-shadow-lg animate-fadeInUp tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <h1 className="text-5xl md:text-7xl font-light mb-8 gradient-text drop-shadow-lg animate-fadeInUp tracking-tight">
           Talk Like Sam Altman
         </h1>
-        <p className="text-white text-lg md:text-2xl font-light max-w-2xl mx-auto mb-12 animate-fadeInUp leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <p className="text-white text-lg md:text-2xl font-light max-w-2xl mx-auto mb-12 animate-fadeInUp leading-relaxed">
           Ask questions and get answers in Sam Altman's style, based on his blogs and writings.
         </p>
 
         {/* Get Started Button */}
-          <button
-      onClick={() => navigate("/chat")}
-      className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-    >
-      <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-      <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-6 py-2 text-sm md:text-base font-medium text-white backdrop-blur-3xl hover:scale-105 transition-transform duration-200">
-        Get Started
-      </span>
-    </button>
+        <button
+          onClick={() => navigate("/chat")}
+          className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+        >
+          <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+          <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-6 py-2 text-sm md:text-base font-medium text-white backdrop-blur-3xl hover:scale-105 transition-transform duration-200">
+            Get Started
+          </span>
+        </button>
       </div>
     </div>
   );

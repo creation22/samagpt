@@ -6,7 +6,7 @@ const steps = [
     description: "Type your question in the input box to start the conversation.",
     icon: (
       <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -15,7 +15,7 @@ const steps = [
     description: "Our AI analyzes your query using Sam Altman's blogs and writings for style.",
     icon: (
       <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -24,7 +24,7 @@ const steps = [
     description: "Receive a response that mimics Sam Altman's tone and style.",
     icon: (
       <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -33,7 +33,7 @@ const steps = [
     description: "Optionally share your insights or refine your question for better answers.",
     icon: (
       <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -142,7 +142,7 @@ const WorkingSection = () => {
           animation: shimmer 3s infinite;
         }
       `}</style>
-      
+
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20 relative">
           <div className="inline-block mb-6">
@@ -150,7 +150,7 @@ const WorkingSection = () => {
               Process
             </span>
           </div>
-          <h2 className="text-6xl md:text-7xl font-light mb-6 tracking-tight gradient-text" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <h2 className="text-6xl md:text-7xl font-light mb-6 tracking-tight gradient-text">
             How It Works
           </h2>
           <p className="text-gray-400 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
@@ -161,7 +161,7 @@ const WorkingSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
           {/* Connecting lines */}
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-800 to-transparent -translate-y-1/2 z-0"></div>
-          
+
           {steps.map((step, index) => (
             <div
               key={index}
@@ -172,21 +172,21 @@ const WorkingSection = () => {
             >
               <div className="card-glow shimmer-effect bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-3xl p-8 h-full flex flex-col items-center text-center transition-all duration-500 hover:border-gray-700 hover:-translate-y-2 relative z-10">
                 <div className="step-number">{(index + 1).toString().padStart(2, '0')}</div>
-                
+
                 <div className="mb-6 text-white opacity-80 group-hover:opacity-100 transition-all duration-300 animate-float">
                   {step.icon}
                 </div>
-                
+
                 <div className="w-12 h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent mb-6"></div>
-                
-                <h3 className="text-2xl font-light mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+
+                <h3 className="text-2xl font-light mb-4 tracking-tight">
                   {step.title}
                 </h3>
-                
+
                 <p className="text-gray-400 font-light leading-relaxed text-sm">
                   {step.description}
                 </p>
-                
+
                 <div className="mt-6 w-full h-1 bg-gray-800 rounded-full overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="h-full bg-gradient-to-r from-gray-600 to-white w-0 group-hover:w-full transition-all duration-1000 ease-out"></div>
                 </div>
@@ -194,7 +194,7 @@ const WorkingSection = () => {
             </div>
           ))}
         </div>
-        
+
         <div className="mt-20 text-center">
           <div className="inline-flex items-center gap-2 text-gray-600 text-sm font-light">
             <div className="w-2 h-2 rounded-full bg-gray-700 animate-pulse"></div>

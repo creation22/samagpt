@@ -94,19 +94,19 @@ const ChatHeader = ({ loading }) => (
         width: '10px',
         height: '10px',
         borderRadius: '50%',
-        background: loading 
+        background: loading
           ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
           : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
         animation: loading ? 'pulse 1.5s ease-in-out infinite' : 'none',
-        boxShadow: loading 
-          ? '0 0 12px rgba(251, 191, 36, 0.6)' 
+        boxShadow: loading
+          ? '0 0 12px rgba(251, 191, 36, 0.6)'
           : '0 0 12px rgba(16, 185, 129, 0.6)',
       }}
     />
     <div
       style={{
         fontSize: '1.25rem',
-        fontWeight: '400',
+        fontWeight: '300',
         color: '#ffffff',
         letterSpacing: '-0.02em',
       }}
@@ -202,8 +202,8 @@ const ChatInput = ({ inputValue, setInputValue, handleSend, loading }) => {
             minWidth: '70px',
             transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             backdropFilter: 'blur(12px)',
-            boxShadow: inputValue.trim() && !loading 
-              ? '0 4px 12px rgba(255, 255, 255, 0.2)' 
+            boxShadow: inputValue.trim() && !loading
+              ? '0 4px 12px rgba(255, 255, 255, 0.2)'
               : 'none',
           }}
           className="send-button"
@@ -326,7 +326,7 @@ const ChatUI = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        // fontFamily removed to use global defaults
       }}
     >
       <div
@@ -361,9 +361,9 @@ const ChatUI = () => {
               <MessageBubble key={msg.id} text={msg.text} isUser={msg.isUser} timestamp={msg.timestamp} />
             ))}
             {loading && (
-              <div style={{ 
-                color: 'rgba(255,255,255,0.45)', 
-                fontStyle: 'italic', 
+              <div style={{
+                color: 'rgba(255,255,255,0.45)',
+                fontStyle: 'italic',
                 textAlign: 'left',
                 fontSize: '0.85rem',
                 paddingLeft: '0.5rem',
