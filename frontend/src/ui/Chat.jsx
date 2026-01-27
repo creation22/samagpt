@@ -1,10 +1,21 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { ChevronDown, Check } from 'lucide-react';
 
 // ==========================================
 // 1. CONFIGURATION & STYLES
 // ==========================================
 
-const API_URL = 'https://samagpt.onrender.com/ask';
+const API_URL = 'http://localhost:3000/ask'; // Updated to localhost for dev, change back for prod if needed
+
+const TOOLS = [
+  { id: 'standard', name: 'Talk Like Sam', description: 'Direct answers based on Sam Altman\'s writing.' },
+  { id: 'stress-tester', name: 'Idea Stress Tester', description: 'Brutally honest critique of your startup idea.' },
+  { id: 'mvp-reducer', name: 'MVP Scope Reducer', description: 'Cut 80% of features to find the core value.' },
+  { id: 'regret-min', name: 'Regret Minimizer', description: 'Project yourself to age 80 to make decisions.' },
+  { id: 'investor-sim', name: 'Investor Simulator', description: 'Face tough questions from a skeptical VC.' },
+  { id: 'email-writer', name: 'Founder Email Writer', description: 'Write cold emails that actually get opened.' },
+];
 
 const GlobalStyles = () => (
   <style>{`
@@ -17,7 +28,7 @@ const GlobalStyles = () => (
       --text-secondary: #888888;
       --accent-user: #333;
       --accent-ai: #10b981;
-      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+      --font-stack: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
     }
 
     * { box-sizing: border-box; }
@@ -44,24 +55,6 @@ const GlobalStyles = () => (
     .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #444; }
 
-    /* Mode Switch */
-    .mode-switch {
-      position: relative; width: 140px; height: 32px;
-      background: #111; border: 1px solid #333;
-      border-radius: 16px; display: flex; cursor: pointer;
-      padding: 2px;
-    }
-    .mode-switch-slider {
-      position: absolute; width: 50%; height: 26px;
-      background: #333; border-radius: 14px;
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .mode-option {
-      flex: 1; z-index: 1; text-align: center; font-size: 0.75rem;
-      line-height: 28px; font-weight: 500; color: #666; transition: color 0.2s;
-    }
-    .mode-option.active { color: #fff; }
-
     /* Voice Pulse */
     @keyframes pulse-red {
       0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
@@ -75,9 +68,6 @@ const GlobalStyles = () => (
 // 2. CUSTOM HOOKS (LOGIC)
 // ==========================================
 
-/**
- * Handles auto-scrolling to the bottom of the chat list.
- */
 const useScrollToBottom = (dependency) => {
   const bottomRef = useRef(null);
   const isFirstRender = useRef(true);
@@ -93,34 +83,40 @@ const useScrollToBottom = (dependency) => {
   return bottomRef;
 };
 
-/**
- * Handles chat state, session management, and API communication.
- */
 const useChatLogic = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "I focus on direct answers based on my writing and thinking. What's on your mind?",
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeModeId = searchParams.get('mode') || 'standard';
+
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState('standard'); // 'standard' | 'roast'
+
+  // Helper to set mode both in state and URL
+  const setMode = useCallback((newModeId) => {
+    setSearchParams({ mode: newModeId });
+  }, [setSearchParams]);
 
   // Reset chat when mode changes
   useEffect(() => {
+    const getWelcomeMessage = (mode) => {
+      switch (mode) {
+        case 'stress-tester': return "YC Partner Mode activated. Pitch me your startup idea. I'll tell you why it might fail.";
+        case 'mvp-reducer': return "I'm your ruthless PM. Tell me all the features you 'think' you need, and I'll cut 80% of them.";
+        case 'regret-min': return "Let's project to age 80. What decision is weighing on you today?";
+        case 'investor-sim': return "I'm a partner at Sequoia. I've only got 5 minutes. What's the opportunity?";
+        case 'email-writer': return "Who are you emailing and what do you want? I'll draft something they'll actually read.";
+        default: return "I focus on direct answers based on my writing and thinking. What's on your mind?";
+      }
+    };
+
     setMessages([{
       id: Date.now(),
-      text: mode === 'roast'
-        ? "YC Partner Mode activated. Pitch me your startup idea. I'll tell you why it will fail."
-        : "I focus on direct answers based on my writing and thinking. What's on your mind?",
+      text: getWelcomeMessage(activeModeId),
       isUser: false,
       timestamp: new Date(),
     }]);
-  }, [mode]);
+  }, [activeModeId]);
 
-  // Initialize Session ID once
+  // Initialize Session ID
   const [sessionId] = useState(() => {
     try {
       const key = 'altmangpt_session_id';
@@ -137,21 +133,18 @@ const useChatLogic = () => {
   const sendMessage = useCallback(async (text) => {
     if (!text.trim()) return;
 
-    // 1. Optimistic UI Update
     const userMsg = { id: Date.now(), text, isUser: true, timestamp: new Date() };
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
 
     try {
-      // 2. API Request
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, sessionId, mode }),
+        body: JSON.stringify({ question: text, sessionId, mode: activeModeId }),
       });
       const data = await res.json();
 
-      // 3. Add AI Response
       setMessages((prev) => [
         ...prev,
         {
@@ -169,9 +162,9 @@ const useChatLogic = () => {
     } finally {
       setLoading(false);
     }
-  }, [sessionId, mode]);
+  }, [sessionId, activeModeId]);
 
-  return { messages, loading, sendMessage, mode, setMode };
+  return { messages, loading, sendMessage, mode: activeModeId, setMode };
 };
 
 // ==========================================
@@ -215,41 +208,98 @@ const MessageBubble = React.memo(({ text, isUser, timestamp }) => (
   </div>
 ));
 
-const Header = ({ loading, messages }) => {
+const ToolSelector = ({ activeMode, setMode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentTool = TOOLS.find(t => t.id === activeMode) || TOOLS[0];
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-medium text-white min-w-[160px] justify-between"
+      >
+        <span className="truncate">{currentTool.name}</span>
+        <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 w-64 bg-[#141414] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+          <div className="py-1">
+            {TOOLS.map((tool) => (
+              <button
+                key={tool.id}
+                onClick={() => {
+                  setMode(tool.id);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors flex items-start gap-3 group ${activeMode === tool.id ? 'bg-white/5' : ''}`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className={`text-sm font-medium mb-0.5 ${activeMode === tool.id ? 'text-emerald-400' : 'text-white group-hover:text-emerald-300'}`}>
+                    {tool.name}
+                  </div>
+                  <div className="text-xs text-gray-400 leading-snug">
+                    {tool.description}
+                  </div>
+                </div>
+                {activeMode === tool.id && <Check size={14} className="text-emerald-400 mt-1" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Header = ({ loading, messages, mode, setMode }) => {
   const handleCopy = () => {
     if (!messages || messages.length === 0) return;
-    const text = messages.map(m => `${m.isUser ? 'User' : 'Sam'}: ${m.text}`).join('\n\n');
+    const text = messages.map(m => `${m.isUser ? 'User' : 'AI'}: ${m.text}`).join('\n\n');
     navigator.clipboard.writeText(text);
     alert('Conversation copied to clipboard');
   };
 
   return (
     <header style={{
-      padding: '1.5rem 0', borderBottom: '1px solid var(--surface-2)',
+      padding: '1.25rem 0', borderBottom: '1px solid var(--surface-2)',
       background: 'rgba(5, 5, 5, 0.8)', backdropFilter: 'blur(10px)',
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       position: 'sticky', top: 0, zIndex: 10, paddingLeft: '1.5rem', paddingRight: '1.5rem'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{
-          width: '8px', height: '8px', borderRadius: '50%',
-          backgroundColor: loading ? '#fbbf24' : '#10b981',
-          boxShadow: loading ? '0 0 8px rgba(251, 191, 36, 0.4)' : 'none',
-          animation: loading ? 'pulse 1.5s infinite' : 'none'
-        }} />
-        <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-          AltmanGPT
-        </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '8px', height: '8px', borderRadius: '50%',
+            backgroundColor: loading ? '#fbbf24' : '#10b981',
+            boxShadow: loading ? '0 0 8px rgba(251, 191, 36, 0.4)' : 'none',
+            animation: loading ? 'pulse 1.5s infinite' : 'none'
+          }} />
+          <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)', letterSpacing: '-0.02em', display: 'none', md: { display: 'block' } }} className="hidden md:block">
+            AltmanGPT
+          </span>
+        </div>
+
+        {/* Tool Selector Dropdown */}
+        <div className="h-6 w-px bg-white/10 hidden md:block"></div>
+        <ToolSelector activeMode={mode} setMode={setMode} />
       </div>
 
       <button
         onClick={handleCopy}
-        style={{
-          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '6px', color: '#888', fontSize: '0.75rem', padding: '6px 10px',
-          cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit'
-        }}
-        className="copy-btn"
+        className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white transition-colors text-xs font-medium"
       >
         Copy Chat
       </button>
@@ -262,7 +312,6 @@ const ChatInput = ({ onSend, loading }) => {
   const [isListening, setIsListening] = useState(false);
   const textareaRef = useRef(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     const ta = textareaRef.current;
     if (ta) {
@@ -331,9 +380,6 @@ const ChatInput = ({ onSend, loading }) => {
           }}
         />
 
-
-
-        {/* Mic Button */}
         <button
           onClick={handleVoice}
           style={{
@@ -353,33 +399,6 @@ const ChatInput = ({ onSend, loading }) => {
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
             <line x1="12" y1="19" x2="12" y2="23"></line>
             <line x1="8" y1="23" x2="16" y2="23"></line>
-          </svg>
-        </button>
-
-        {/* Paste Button */}
-        <button
-          onClick={async () => {
-            try {
-              const text = await navigator.clipboard.readText();
-              if (text) setValue((prev) => prev + text);
-            } catch (err) {
-              console.error('Failed to read clipboard', err);
-            }
-          }}
-          style={{
-            background: 'transparent',
-            color: '#666',
-            border: 'none',
-            padding: '8px',
-            cursor: 'pointer',
-            marginRight: '4px',
-            marginBottom: '4px'
-          }}
-          title="Paste from Clipboard"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
           </svg>
         </button>
 
@@ -404,10 +423,6 @@ const ChatInput = ({ onSend, loading }) => {
   );
 };
 
-// ==========================================
-// 4. MAIN CONTAINER
-// ==========================================
-
 const ChatUI = () => {
   const { messages, loading, sendMessage, mode, setMode } = useChatLogic();
   const bottomRef = useScrollToBottom(messages);
@@ -422,9 +437,12 @@ const ChatUI = () => {
         <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.5rem' }}>
           {messages.length === 1 && (
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px', justifyContent: 'center' }}>
-              {(mode === 'roast'
-                ? ["My AI startup idea...", "Uber for dogs...", "Social network for introverts..."]
-                : ["How do I start a startup?", "Should I sell my company?", "What is the future of AI?", "How to hire great people?"]
+              {(mode === 'stress-tester' ? ["My AI software idea...", "Food delivery for pets...", "Uber for babysitters..."] :
+                mode === 'mvp-reducer' ? ["Social network with video calls, marketplace, and stories...", "AI dating app with VR support..."] :
+                  mode === 'regret-min' ? ["Should I quit my job to start a company?", "Should I move to San Francisco?"] :
+                    mode === 'investor-sim' ? ["Pitching a B2B SaaS for law firms...", "D2C personalized vitamins..."] :
+                      mode === 'email-writer' ? ["Cold email to YC partner...", "Follow up with angel investor..."] :
+                /* Standard */["How do I start a startup?", "Should I sell my company?", "What is the future of AI?", "How to hire great people?"]
               ).map(q => (
                 <button
                   key={q}

@@ -7,6 +7,7 @@ import Imaging from "./ui/Imaging";
 import ChatUI from "./ui/Chat";
 import { MarqueeDemo } from "./ui/Testimonial.jsx";
 import Feedback from "./ui/Feedback.jsx";
+import ProtectedRoute from "./ui/ProtectedRoute.jsx";
 import CustomCursor from "./ui/Cursor.jsx"; // ✅ import
 import { Analytics } from "@vercel/analytics/react"
 
@@ -15,7 +16,7 @@ function App() {
     <div className="min-h-screen w-full relative overflow-hidden text-white">
       {/* Custom Cursor */}
       <CustomCursor />
-  
+
       {/* Crimson Depth Background */}
       <div
         className="absolute inset-0 z-0"
@@ -35,8 +36,8 @@ function App() {
                 <Hero />
                 <WorkingSection />
                 <Feedback />
-                
-                
+
+
                 <div className="mt-10">
                   <Imaging />
                 </div>
@@ -44,7 +45,14 @@ function App() {
               </>
             }
           />
-          <Route path="/chat" element={<ChatUI />} />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatUI />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
         <Analytics />
       </div>
