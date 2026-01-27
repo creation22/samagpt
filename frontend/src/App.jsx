@@ -7,6 +7,7 @@ import Imaging from "./ui/Imaging";
 import ChatUI from "./ui/Chat";
 import { MarqueeDemo } from "./ui/Testimonial.jsx";
 import Feedback from "./ui/Feedback.jsx";
+import RecentFundraises from "./ui/Fundraises.jsx";
 import ProtectedRoute from "./ui/ProtectedRoute.jsx";
 import CustomCursor from "./ui/Cursor.jsx"; // ✅ import
 import { Analytics } from "@vercel/analytics/react"
@@ -53,6 +54,13 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/fundraises" element={
+            <>
+              <Navbar />
+              <RecentFundraises />
+              <Footer />
+            </>
+          } />
         </Routes>
         <Analytics />
       </div>

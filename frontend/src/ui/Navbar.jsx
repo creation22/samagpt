@@ -83,6 +83,12 @@ const Navbar = () => {
               </div>
 
               <button
+                onClick={() => navigate("/fundraises")}
+                className="px-4 py-1.5 rounded-md bg-transparent hover:bg-white/10 text-white transition-colors text-sm font-medium"
+              >
+                Fundraises
+              </button>
+              <button
                 onClick={() => navigate("/chat")}
                 className="px-4 py-1.5 rounded-md bg-white/20 hover:bg-white/30 text-white transition-colors text-sm font-medium"
               >
@@ -146,6 +152,16 @@ const Navbar = () => {
                   </button>
                 ))}
                 <div className="h-px bg-white/10 my-1"></div>
+
+                <button
+                  onClick={() => {
+                    navigate("/fundraises");
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full px-3 py-2 rounded-md bg-transparent hover:bg-white/10 text-white transition-colors text-center text-sm font-medium"
+                >
+                  Fundraises
+                </button>
 
                 <button
                   onClick={() => {

@@ -6,7 +6,9 @@ import { ChevronDown, Check } from 'lucide-react';
 // 1. CONFIGURATION & STYLES
 // ==========================================
 
-const API_URL = 'https://samagpt.onrender.com/ask';
+const API_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000/ask'
+  : 'https://samagpt.onrender.com/ask';
 
 const TOOLS = [
   { id: 'standard', name: 'Talk Like Sam', description: 'Direct answers based on Sam Altman\'s writing.' },
